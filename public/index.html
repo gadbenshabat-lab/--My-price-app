@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>חיפוש מחירים</title>
+</head>
+<body>
+    <h1>חיפוש מוצרים</h1>
+    <input type="text" id="category" placeholder="קטגוריה">
+    <input type="text" id="brand" placeholder="מותג">
+    <button onclick="search()">חפש</button>
+    <div id="results" style="margin-top: 20px;"></div>
+
+    <script>
+        async function search() {
+            const category = document.getElementById('category').value;
+            const brand = document.getElementById('brand').value;
+            
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category, brand })
+            });
+            const data = await response.json();
+            document.getElementById('results').innerText = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>

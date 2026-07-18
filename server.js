@@ -2,13 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
-const db = require('./db.js');
+const dbInstance = require('./db.js');
 const adminRoutes = require('./adminRoutes');
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.use('/', adminRoutes);
+app.use(express.static('public'));
 
 app.post('/api/search', (req, res) => {
     const { category, brand } = req.body;
@@ -21,7 +22,7 @@ app.post('/api/search', (req, res) => {
         GROUP BY p.product_id 
         ORDER BY best_price ASC
     `;
-    db.all(query, [category, brand], (err, rows) => {
+    dbInstance.all(query, [category, brand], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
