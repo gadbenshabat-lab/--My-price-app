@@ -2,28 +2,54 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>חיפוש מחירים</title>
+    <title>חיפוש מוצרים</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #category-container { display: flex; gap: 20px; margin-bottom: 20px; }
+        .card { 
+            border: 1px solid #ccc; 
+            padding: 15px; 
+            cursor: pointer; 
+            text-align: center; 
+            border-radius: 10px; 
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: scale(1.05); border-color: #007bff; }
+    </style>
 </head>
 <body>
-    <h1>חיפוש מוצרים</h1>
-    <input type="text" id="category" placeholder="קטגוריה">
-    <input type="text" id="brand" placeholder="מותג">
-    <button onclick="search()">חפש</button>
-    <div id="results" style="margin-top: 20px;"></div>
+
+    <h1>בחר קטגוריה</h1>
+    <div id="category-container"></div>
+    <div id="results"></div>
 
     <script>
-        async function search() {
-            const category = document.getElementById('category').value;
-            const brand = document.getElementById('brand').value;
-            
-            const response = await fetch('/api/search', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ category, brand })
-            });
-            const data = await response.json();
-            document.getElementById('results').innerText = JSON.stringify(data, null, 2);
+        // טעינת הקטגוריות מהשרת
+        async function loadCategories() {
+            try {
+                const res = await fetch('/api/categories');
+                const data = await res.json();
+                const container = document.getElementById('category-container');
+                
+                container.innerHTML = data.map(cat => `
+                    <div class="card" onclick="selectCategory('${cat.name}')">
+                        <img src="${cat.image}" width="60"><br>
+                        ${cat.name}
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("שגיאה בטעינת קטגוריות:", err);
+            }
         }
+
+        // פונקציה ללחיצה על קטגוריה
+        function selectCategory(name) {
+            alert("בחרת את: " + name + ". כאן נפתח את השאלה הבאה!");
+            // בהמשך נעדכן כאן את הלוגיקה להצגת מותגים או תת-קטגוריה
+        }
+
+        // טעינה ראשונית
+        loadCategories();
     </script>
 </body>
 </html>
