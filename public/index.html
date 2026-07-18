@@ -2,56 +2,44 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>חיפוש מוצרים</title>
+    <title>חיפוש מוצרים חכם</title>
     <style>
         body { font-family: sans-serif; padding: 20px; text-align: center; }
         .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
-        .card { 
-            border: 1px solid #ccc; padding: 15px; cursor: pointer; 
-            text-align: center; border-radius: 10px; width: 140px;
-            transition: transform 0.2s; background: #fff;
-        }
-        .card:hover { transform: scale(1.05); border-color: #007bff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .card { border: 1px solid #ccc; padding: 20px; cursor: pointer; border-radius: 10px; width: 180px; background: #fff; }
+        .card:hover { border-color: #007bff; background: #f0f7ff; }
     </style>
 </head>
 <body>
-
-    <h1 id="title">בחר קטגוריה</h1>
+    <h1 id="title">טוען...</h1>
     <div id="grid-container" class="grid"></div>
 
     <script>
-        // 1. טעינת הקטגוריות
-        async function loadCategories() {
-            const res = await fetch('/api/categories');
+        let currentFilter = {};
+
+        async function fetchNextStep() {
+            const query = new URLSearchParams(currentFilter).toString();
+            const res = await fetch(`/api/next-step?${query}`);
             const data = await res.json();
-            const container = document.getElementById('grid-container');
-            document.getElementById('title').innerText = "בחר קטגוריה";
             
-            container.innerHTML = data.map(cat => `
-                <div class="card" onclick="selectCategory('${cat.name}')">
-                    <img src="${cat.image}" width="60"><br>
-                    <strong>${cat.name}</strong>
+            document.getElementById('title').innerText = data.step === 'category' ? "בחר קטגוריה" : (data.step === 'brand' ? "בחר מותג" : "בחר מוצר");
+            const container = document.getElementById('grid-container');
+            
+            container.innerHTML = data.options.map(opt => `
+                <div class="card" onclick="selectOption('${data.step}', '${opt}')">
+                    <strong>${opt}</strong>
                 </div>
             `).join('');
         }
 
-        // 2. מעבר למותגים לאחר בחירת קטגוריה
-        async function selectCategory(categoryName) {
-            const res = await fetch(`/api/brands/${encodeURIComponent(categoryName)}`);
-            const brands = await res.json();
-            const container = document.getElementById('grid-container');
-            document.getElementById('title').innerText = "בחר מותג עבור: " + categoryName;
-
-            container.innerHTML = brands.length > 0 ? 
-                brands.map(b => `
-                    <div class="card" onclick="alert('בחרת את ${b.brand}')">
-                        <strong>${b.brand}</strong>
-                    </div>
-                `).join('') :
-                "<p>לא נמצאו מותגים בקטגוריה זו.</p>";
+        function selectOption(step, value) {
+            if (step === 'category') currentFilter.category = value;
+            else if (step === 'brand') currentFilter.brand = value;
+            else { alert('בחרת מוצר: ' + value); return; }
+            fetchNextStep();
         }
 
-        loadCategories();
+        fetchNextStep();
     </script>
 </body>
 </html>
