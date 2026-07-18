@@ -3,8 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
 const db = require('./db.js');
-const adminRoutes = require('./adminRoutes.js');
-
+const adminRoutes = require('./adminRoutes');
 const app = express();
 app.use(cors());
 app.use(express.json());
