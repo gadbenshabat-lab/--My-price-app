@@ -8,11 +8,30 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+function initDatabase() {
+    dbInstance.serialize(() => {
+        dbInstance.run(`CREATE TABLE IF NOT EXISTS products (product_id INTEGER PRIMARY KEY, name TEXT, category TEXT, brand TEXT)`);
+        
+        dbInstance.get("SELECT count(*) as count FROM products", [], (err, row) => {
+            if (row.count === 0) {
+                const stmt = dbInstance.prepare("INSERT INTO products (name, category, brand) VALUES (?, ?, ?)");
+                const data = [
+                    ["גלקסי S24", "סלולר", "Samsung"], ["אייפון 15", "סלולר", "Apple"],
+                    ["מקרר 4 דלתות", "מקררים", "LG"], ["מקרר מקפיא עליון", "מקררים", "Samsung"],
+                    ["מכונת כביסה 8 קילו", "מכונות כביסה", "Bosch"], ["מדיח כלים", "מדיחי כלים", "Electrolux"],
+                    ["טלוויזיה 65 אינץ'", "טלוויזיות", "Sony"], ["מיקרוגל", "מוצרי חשמל", "Panasonic"]
+                ];
+                data.forEach(item => stmt.run(item));
+                stmt.finalize();
+            }
+        });
+    });
+}
+initDatabase();
+
 app.get('/api/next-step', (req, res) => {
     const { category, brand } = req.query;
-
     if (!category) {
-        // שליפת כל הקטגוריות הייחודיות ללא הגבלה
         dbInstance.all("SELECT DISTINCT category FROM products WHERE category IS NOT NULL", [], (err, rows) => {
             res.json({ step: 'category', options: rows.map(r => r.category) });
         });

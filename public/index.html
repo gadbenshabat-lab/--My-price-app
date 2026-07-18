@@ -2,18 +2,16 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>השוואת מחירים חכמה</title>
+    <title>חיפוש מוצרים חכם</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 40px; text-align: center; }
-        h1 { color: #333; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; max-width: 900px; margin: 0 auto; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 40px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
         .card { 
-            background: white; border-radius: 15px; padding: 30px; cursor: pointer; 
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;
-            display: flex; align-items: center; justify-content: center; border: 2px solid transparent;
+            background: white; padding: 40px 20px; border-radius: 20px; cursor: pointer; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s;
+            border-bottom: 5px solid #007bff;
         }
-        .card:hover { transform: translateY(-10px); box-shadow: 0 12px 20px rgba(0,0,0,0.15); border-color: #007bff; }
-        .card strong { font-size: 1.2rem; color: #555; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -22,29 +20,23 @@
 
     <script>
         let currentFilter = {};
-
         async function fetchNextStep() {
             const query = new URLSearchParams(currentFilter).toString();
             const res = await fetch(`/api/next-step?${query}`);
             const data = await res.json();
-            
             document.getElementById('title').innerText = data.step === 'category' ? "בחר קטגוריה" : (data.step === 'brand' ? "בחר מותג" : "בחר מוצר");
-            const container = document.getElementById('grid-container');
-            
-            container.innerHTML = data.options.map(opt => `
+            document.getElementById('grid-container').innerHTML = data.options.map(opt => `
                 <div class="card" onclick="selectOption('${data.step}', '${opt}')">
                     <strong>${opt}</strong>
                 </div>
             `).join('');
         }
-
         function selectOption(step, value) {
             if (step === 'category') currentFilter.category = value;
             else if (step === 'brand') currentFilter.brand = value;
-            else { alert('בחרת מוצר: ' + value); return; }
+            else { alert('מוצר שנבחר: ' + value); return; }
             fetchNextStep();
         }
-
         fetchNextStep();
     </script>
 </body>
