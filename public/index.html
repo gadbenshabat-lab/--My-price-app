@@ -2,20 +2,29 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>דיבאג נתונים</title>
+    <title>חיפוש מוצרים</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .card { border: 1px solid #ccc; padding: 15px; cursor: pointer; border-radius: 10px; width: 140px; }
+        .card:hover { transform: scale(1.05); border-color: #007bff; }
+    </style>
 </head>
 <body>
-    <h1>נתונים מהשרת:</h1>
-    <pre id="raw-data"></pre>
+    <h1>בחר קטגוריה</h1>
+    <div id="grid-container" class="grid"></div>
 
     <script>
         fetch('/api/categories')
             .then(res => res.json())
             .then(data => {
-                document.getElementById('raw-data').innerText = JSON.stringify(data, null, 2);
-            })
-            .catch(err => {
-                document.getElementById('raw-data').innerText = "שגיאה: " + err;
+                const container = document.getElementById('grid-container');
+                container.innerHTML = data.map(cat => `
+                    <div class="card" onclick="alert('בחרת: ${cat.name}')">
+                        <img src="${cat.image}" width="60"><br>
+                        <strong>${cat.name}</strong>
+                    </div>
+                `).join('');
             });
     </script>
 </body>
