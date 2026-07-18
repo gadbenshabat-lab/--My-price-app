@@ -2,59 +2,21 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>חיפוש מוצרים</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
-        .card { 
-            border: 1px solid #ccc; padding: 15px; cursor: pointer; 
-            text-align: center; border-radius: 10px; width: 140px;
-            transition: transform 0.2s; background: #fff;
-        }
-        .card:hover { transform: scale(1.05); border-color: #007bff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        img { border-radius: 50%; margin-bottom: 10px; }
-    </style>
+    <title>דיבאג נתונים</title>
 </head>
 <body>
-
-    <h1 id="title">טוען קטגוריות...</h1>
-    <div id="grid-container" class="grid"></div>
+    <h1>נתונים מהשרת:</h1>
+    <pre id="raw-data"></pre>
 
     <script>
-        // טעינת הקטגוריות מהשרת
-        async function loadCategories() {
-            const res = await fetch('/api/categories');
-            const data = await res.json();
-            const container = document.getElementById('grid-container');
-            document.getElementById('title').innerText = "בחר קטגוריה";
-            
-            container.innerHTML = data.map(cat => `
-                <div class="card" onclick="selectCategory('${cat.name}')">
-                    <img src="${cat.image}" width="60"><br>
-                    <strong>${cat.name}</strong>
-                </div>
-            `).join('');
-        }
-
-        // מעבר למותגים לאחר בחירת קטגוריה
-        async function selectCategory(categoryName) {
-            const res = await fetch(`/api/brands/${encodeURIComponent(categoryName)}`);
-            const brands = await res.json();
-            const container = document.getElementById('grid-container');
-            document.getElementById('title').innerText = "בחר מותג עבור: " + categoryName;
-
-            if (brands.length === 0) {
-                container.innerHTML = "<p>לא נמצאו מותגים בקטגוריה זו.</p>";
-            } else {
-                container.innerHTML = brands.map(b => `
-                    <div class="card" onclick="alert('בחרת את ${b.brand}')">
-                        <strong>${b.brand}</strong>
-                    </div>
-                `).join('');
-            }
-        }
-
-        loadCategories();
+        fetch('/api/categories')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('raw-data').innerText = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('raw-data').innerText = "שגיאה: " + err;
+            });
     </script>
 </body>
 </html>
