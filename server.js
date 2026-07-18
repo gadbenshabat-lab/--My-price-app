@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use(adminRoutes);
+app.use('/', adminRoutes);
 
 app.post('/api/search', (req, res) => {
     const { category, brand } = req.body;
