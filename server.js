@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
-const dbInstance = require('./db.js'); // שימוש ב-dbInstance כמו שתיקנו
+const dbInstance = require('./db.js');
 const adminRoutes = require('./adminRoutes');
 
 const app = express();
@@ -12,23 +12,34 @@ app.use(express.json());
 app.use('/', adminRoutes);
 app.use(express.static('public'));
 
-// --- API לקבלת הקטגוריות ---
+// --- API לקבלת כל הקטגוריות באופן דינמי מה-DB ---
 app.get('/api/categories', (req, res) => {
-    const categories = [
-        { id: 1, name: "סלולר", image: "https://cdn-icons-png.flaticon.com/128/2965/2965879.png" },
-        { id: 2, name: "מקררים", image: "https://cdn-icons-png.flaticon.com/128/3002/3002621.png" },
-        { id: 3, name: "מחשבים", image: "https://cdn-icons-png.flaticon.com/128/3063/3063821.png" }
-    ];
-    res.json(categories);
+    const query = "SELECT DISTINCT category FROM products WHERE category IS NOT NULL";
+    dbInstance.all(query, [], (err, rows) => {
+        if (err) {
+            console.error("Error fetching categories:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        
+        // יצירת רשימה עם תמונות דינמיות לפי שם הקטגוריה
+        const categories = rows.map(row => ({
+            name: row.category,
+            image: `https://ui-avatars.com/api/?name=${encodeURIComponent(row.category)}&background=random&size=128`
+        }));
+        res.json(categories);
+    });
 });
 
 // --- API לקבלת מותגים לפי קטגוריה ---
 app.get('/api/brands/:category', (req, res) => {
-    const category = req.params.category;
-    const query = "SELECT DISTINCT brand FROM products WHERE category = ?";
+    const category = decodeURIComponent(req.params.category);
+    const query = "SELECT DISTINCT brand FROM products WHERE category = ? AND brand IS NOT NULL";
     
     dbInstance.all(query, [category], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error("Error fetching brands:", err);
+            return res.status(500).json({ error: err.message });
+        }
         res.json(rows);
     });
 });
@@ -51,6 +62,7 @@ app.post('/api/search', (req, res) => {
     });
 });
 
+// משימות מתוזמנות
 cron.schedule('0 */4 * * *', () => {
     console.log('...מריץ סנכרון מחירים מתוזמן');
 });

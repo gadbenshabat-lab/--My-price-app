@@ -8,19 +8,20 @@
         .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
         .card { 
             border: 1px solid #ccc; padding: 15px; cursor: pointer; 
-            text-align: center; border-radius: 10px; width: 120px;
-            transition: transform 0.2s;
+            text-align: center; border-radius: 10px; width: 140px;
+            transition: transform 0.2s; background: #fff;
         }
-        .card:hover { transform: scale(1.05); border-color: #007bff; }
+        .card:hover { transform: scale(1.05); border-color: #007bff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        img { border-radius: 50%; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <h1 id="title">בחר קטגוריה</h1>
+    <h1 id="title">טוען קטגוריות...</h1>
     <div id="grid-container" class="grid"></div>
 
     <script>
-        // טעינת הקטגוריות הראשונית
+        // טעינת הקטגוריות מהשרת
         async function loadCategories() {
             const res = await fetch('/api/categories');
             const data = await res.json();
@@ -30,14 +31,14 @@
             container.innerHTML = data.map(cat => `
                 <div class="card" onclick="selectCategory('${cat.name}')">
                     <img src="${cat.image}" width="60"><br>
-                    ${cat.name}
+                    <strong>${cat.name}</strong>
                 </div>
             `).join('');
         }
 
-        // בחירת קטגוריה ומעבר למותגים
+        // מעבר למותגים לאחר בחירת קטגוריה
         async function selectCategory(categoryName) {
-            const res = await fetch(`/api/brands/${categoryName}`);
+            const res = await fetch(`/api/brands/${encodeURIComponent(categoryName)}`);
             const brands = await res.json();
             const container = document.getElementById('grid-container');
             document.getElementById('title').innerText = "בחר מותג עבור: " + categoryName;
@@ -47,7 +48,7 @@
             } else {
                 container.innerHTML = brands.map(b => `
                     <div class="card" onclick="alert('בחרת את ${b.brand}')">
-                        ${b.brand}
+                        <strong>${b.brand}</strong>
                     </div>
                 `).join('');
             }
